@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.generics import ListAPIView
 from .models import Scan
 from .serializers import ScanSerializer
 from django.shortcuts import render
+
 
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
@@ -66,5 +68,13 @@ class ScanUploadView(APIView):
         serializer = ScanSerializer(scan)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+class ScanHistoryView(ListAPIView):
+    serializer_class = ScanSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Scan.objects.filter(user=self.request.user).order_by('-created_at')
+    
 
 # Create your views here.
