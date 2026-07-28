@@ -33,18 +33,20 @@ class ScanUploadView(APIView):
         #Call Vision API
 
         try:
-            vision_client = vision.ImageAnnonatorClient(client_options={"api_key": os.getenv('VISION_API_KEY')})
-            content = image_file.read()
-            vision_image = vision.Image(content=content)
-            vision_response = vision_client.label_detection(image=vision_image)
-            labels = [label.description for label in vision_response.label_annonations]
+            # vision_client = vision.ImageAnnotatorClient(client_options={"api_key": os.getenv('VISION_API_KEY')})
+            # content = image_file.read()
+            # vision_image = vision.Image(content=content)
+            # vision_response = vision_client.label_detection(image=vision_image)
+            #labels = [label.description for label in vision_response.label_annotations]
+            # Temporary: mock Vision output until billing access is resolved
+            labels = ["skin", "face", "acne", "dry skin", "forehead", "oiliness"] 
         except Exception as e:
             return Response({'error': f'Vision API failed: {str(e)}'}, status= status.HTTP_502_BAD_GATEWAY)
 
 
         #Call Gemini API
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-3.6-flash')
             prompt = f"Based on these detected skin-related laels: {labels}, provide a structured skincare recommendation with severity and care paln."
             gemini_response = model.generate_content(prompt)
             recommendation_text = gemini_response.text
