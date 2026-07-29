@@ -8,12 +8,19 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.generics import ListAPIView
+from rest_framework.decorators import api_view
 from .models import Scan
 from .serializers import ScanSerializer
 from django.shortcuts import render
+from rest_framework import generics
+from .serializers import RegisterSerializer
+from django.contrib.auth.models import User
+
 
 
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+
+
 
 class ScanUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,5 +83,21 @@ class ScanHistoryView(ListAPIView):
     def get_queryset(self):
         return Scan.objects.filter(user=self.request.user).order_by('-created_at')
     
+@api_view(['GET'])
+def home(request):
+    return Response({
+        "message": "Welcome to SkinSense API",
+        "endpoints": {
+            "register": "/api/register/",
+            "login": "/api/token/",
+            "upload_scan": "/api/scan/",
+            "scan_history": "/api/scans/"
+        }
+    })
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = []
 
 # Create your views here.
